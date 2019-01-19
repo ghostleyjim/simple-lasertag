@@ -1,7 +1,7 @@
 /* 
 TO DO
 - ontvangst lichtsensor en hitdetectie
-- Team LED DONE
+- Team LED Not Working
 - Ammo counter DONE
 - powerups??
 */
@@ -27,12 +27,12 @@ TO DO
 
 //output definition
 #define BuzzerPin 9
-#define LightPin 11
+#define LightPin 12
 #define RedLED A1
 #define GreenLED A2
 
 // debounce and wait times
-#define ButWaitTime 250     //wait time between buttonpresses
+#define ButWaitTime 500     //wait time between buttonpresses
 #define HitTime 1500        //cooldown time before you can get hit again
 unsigned long CooldownTime; // variable to store the millis() time
 unsigned long LightTime;    // store millis() when LED is switched on
@@ -73,13 +73,11 @@ void setup()
 
 dis.point(POINT_ON);
 
+Serial.begin(9600);
 }
 
 void loop()
 {
-  DisplayUpdate();
-  dis.display(DisplayCode);
-
   if (StartFlag == true)
   {
     GameStart();
@@ -89,11 +87,24 @@ void loop()
 
   if (Lives > 0 && StartFlag == false)
   {
+    DisplayUpdate();
+  dis.display(DisplayCode);
+  
     Trigger();
     HitDetect();
+
+    if (digitalRead(ReloadPin) == LOW)
+    {
+      AmmoCount = 20;
+    }
+  
   }
   else if (Lives == 0 && StartFlag == false)
   {
+    for(int i=0; i<=3; i++)
+    {
+    DisplayCode[i] = 0x00 ;
+    }
     GameEnd();
   }
 }
@@ -101,7 +112,7 @@ void loop()
 // setup for game starting
 void GameStart()
 {
-  while (teamSelectFlag == false) // first select teamcolor LED
+ while (teamSelectFlag == false) // first select teamcolor LED
   {
     if (digitalRead(ScrollButton) == LOW && millis() - CooldownTime >= ButWaitTime)
       {
@@ -109,6 +120,7 @@ void GameStart()
         {
           digitalWrite(RedLED, LOW);
           digitalWrite(GreenLED, HIGH);
+          CooldownTime = millis();
         }
         else
         {
@@ -116,28 +128,31 @@ void GameStart()
           digitalWrite(GreenLED, LOW);
           CooldownTime = millis();
         }
-        if (SelectButton == LOW)
+        }
+        if (digitalRead(SelectButton) == LOW)
           {
         teamSelectFlag = true;
-        continue;
+        Serial.println("Teamselectflag checked");
       }
   }
-  }
+  
 
 
   while (StartFlag == true)
   {
-    DisplayUpdate();
-  dis.display(DisplayCode);
-    
-    if (digitalRead(ScrollButton) == LOW && millis() - CooldownTime >= ButWaitTime)
+     if (digitalRead(ScrollButton) == LOW && millis() - CooldownTime >= ButWaitTime)
     {
       Lives++;
       CooldownTime = millis();
+      DisplayUpdate();
+  dis.display(DisplayCode);
+  Serial.println(Lives);
     }
-      if (Lives >= 15)
+      if (Lives >= 16)
       {
         Lives = 0;
+        DisplayUpdate();
+  dis.display(DisplayCode);
       }
     else if (digitalRead(SelectButton) == LOW && Lives > 0 && millis() - CooldownTime >= ButWaitTime)
     {
@@ -179,11 +194,12 @@ void GameStart()
     }
     if (DisplayState == true)
     {
+      dis.init();
       tone(BuzzerPin, 400, 500);
     }
     else
     {
-      dis.display(0);
+      dis.display(DisplayCode);
       tone(BuzzerPin, 800, 500);
     }
   }
@@ -198,7 +214,7 @@ void GameStart()
         if (TriggerPinState == LOW && PreviousTriggerState != TriggerPinState && AmmoCount > 0 && millis() - LightTime >= (LightOnTime + SemiMode))
     {
       digitalWrite(LightPin, HIGH);
-
+      Serial.println("fire!");
       AmmoCount--;
       LightTime = millis();
     }
@@ -221,8 +237,8 @@ void GameStart()
 
   void DisplayUpdate()
   {
-DisplayCode[0] = Ammo / 10;
-DisplayCode[1] = Ammo % 10;
+DisplayCode[0] = AmmoCount / 10;
+DisplayCode[1] = AmmoCount % 10;
 DisplayCode[2] = Lives / 10;
 DisplayCode[3] = Lives % 10 ;
   } 
