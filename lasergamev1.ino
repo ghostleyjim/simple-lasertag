@@ -69,14 +69,19 @@ void setup()
   dis.init();
   pinMode(SelectButton, INPUT_PULLUP);
   pinMode(ScrollButton, INPUT_PULLUP);
+  
   pinMode(HitButton, INPUT_PULLUP);
   pinMode(ResetButton, INPUT_PULLUP);
-  pinMode(BuzzerPin, OUTPUT);
   pinMode(ReloadPin, INPUT_PULLUP);
-  pinMode(GreenLED, OUTPUT);
-  pinMode(RedLED, OUTPUT);
+  
   pinMode(LDR_Front, INPUT);
   pinMode(LDR_Back, INPUT);
+  
+  pinMode(BuzzerPin, OUTPUT);
+ 
+  pinMode(GreenLED, OUTPUT);
+  pinMode(RedLED, OUTPUT);
+  
 
   digitalWrite(GreenLED, HIGH);
   AmmoCount = Ammo;
@@ -87,18 +92,18 @@ for (int i = 0; i<=2; i++){ 																//take 3 readings from LDR and store
 																										// check if for loop can be used in setup
 	measurement_front[i] = analogRead(LDR_Front);
 	
-	delay(100);
-	
 	Serial.print("measurement front no ");
 	Serial.print(i);
-	Serial. print(" = ");
+	Serial.print(" = ");
 	Serial.println(measurement_front[i]);
+
+	delay(100);
 	
 	measurement_back[i] = analogRead(LDR_Back);
 	
 	Serial.print("measurement back no ");
 	Serial.print(i);
-	Serial. print(" = ");
+	Serial.print(" = ");
 	Serial.println(measurement_back[i]);
 	
 	delay(100);
