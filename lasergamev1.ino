@@ -28,17 +28,25 @@ TO DO
 //output definition
 #define BuzzerPin 9
 #define LightPin 12
-#define RedLED A1
-#define GreenLED A2
+#define RedLED 4
+#define GreenLED 6
+#define LDR_Front A1
+#define LDR_Back A2
 
 // debounce and wait times
 #define ButWaitTime 500     //wait time between buttonpresses
-#define HitTime 1500        //cooldown time before you can get hit again
+#define HitTime 1500        //cooldown time before you can get hit again and buzzersound time
 unsigned long CooldownTime; // variable to store the millis() time
 unsigned long LightTime;    // store millis() when LED is switched on
 
 int LightOnTime = 1500; // time light is on (1000 ms is 1 sec)
 int SemiMode = 500;     // time between being able to fire again.
+
+int measurement_front[] = {0, 0, 0};
+int measurement_back[] = {0, 0, 0};
+
+int front = 0; //store average from measurement_front array to compare
+int back = 0; //store average from measurement_back array to compare
 
 bool PreviousTriggerState;
 
@@ -67,11 +75,44 @@ void setup()
   pinMode(ReloadPin, INPUT_PULLUP);
   pinMode(GreenLED, OUTPUT);
   pinMode(RedLED, OUTPUT);
+  pinMode(LDR_Front, INPUT);
+  pinMode(LDR_Back, INPUT);
 
   digitalWrite(GreenLED, HIGH);
   AmmoCount = Ammo;
 
 dis.point(POINT_ON);
+
+for (int i = 0; i<=2; i++){ 																//take 3 readings from LDR and store in array
+																										// check if for loop can be used in setup
+	measurement_front[i] = analogRead(LDR_Front);
+	
+	delay(100);
+	
+	Serial.print("measurement front no ");
+	Serial.print(i);
+	Serial. print(" = ");
+	Serial.println(measurement_front[i]);
+	
+	measurement_back[i] = analogRead(LDR_Back);
+	
+	Serial.print("measurement back no ");
+	Serial.print(i);
+	Serial. print(" = ");
+	Serial.println(measurement_back[i]);
+	
+	delay(100);
+}
+
+front = (measurement_front[0] + measurement_front[1] + measurement_front[2]) / 3;
+
+back = (measurement_back[0] + measurement_back[1] + measurement_back[2]) / 3;
+
+Serial.print("measured average front = ");
+Serial.println(front);
+
+Serial.print("measured average back = ");
+Serial.println(back);
 
 Serial.begin(9600);
 }
@@ -160,16 +201,20 @@ void GameStart()
     }
   }
 }
+
+
   void HitDetect()
   {
 
-    if (digitalRead(HitButton) == LOW && millis() - CooldownTime >= HitTime)
+    if ((analogRead(LDR_Front) < Front || analogRead(LDR_Back) < Back) && millis() - CooldownTime >= HitTime ) //check if LDR measurement gets higher or lower
     {
-      Lives--;
+	  Lives--;
       CooldownTime = millis();
       tone(BuzzerPin, 800, HitTime);
     }
   }
+
+
 
   void GameEnd()
   {
