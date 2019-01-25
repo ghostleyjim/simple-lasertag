@@ -30,6 +30,8 @@ TO DO
 #define LightPin 12
 #define RedLED 4
 #define GreenLED 6
+
+//analog input definition
 #define LDR_Front A1
 #define LDR_Back A2
 
@@ -65,8 +67,12 @@ bool teamSelectFlag = false;
 
 void setup()
 {
-  dis.set(2);
+  //initialize display
+  dis.set(2); 
   dis.init();
+  dis.point(POINT_ON);
+    
+  // pinmode definitions
   pinMode(SelectButton, INPUT_PULLUP);
   pinMode(ScrollButton, INPUT_PULLUP);
   
@@ -84,9 +90,8 @@ void setup()
   
 
   digitalWrite(GreenLED, HIGH);
+  
   AmmoCount = Ammo;
-
-dis.point(POINT_ON);
 
 for (int i = 0; i<=2; i++){ 																//take 3 readings from LDR and store in array
 																										// check if for loop can be used in setup
@@ -175,10 +180,11 @@ void GameStart()
           CooldownTime = millis();
         }
         }
-        if (digitalRead(SelectButton) == LOW)
+       
+	    if (digitalRead(SelectButton) == LOW)
           {
         teamSelectFlag = true;
-        Serial.println("Teamselectflag checked");
+        Serial.println("Teamselectflag checked, let's continue ");
       }
   }
   
@@ -268,6 +274,7 @@ void GameStart()
       AmmoCount--;
       LightTime = millis();
     }
+	
     if (millis() - LightTime >= LightOnTime)
     {
       digitalWrite(LightPin, LOW);
