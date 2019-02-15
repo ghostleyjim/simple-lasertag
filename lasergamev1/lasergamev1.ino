@@ -20,7 +20,6 @@ TO DO
 // Input definition
 #define SelectButton 7
 #define ScrollButton 8
-#define HitButton 4
 #define ResetButton 5
 #define TriggerPin 10
 #define ReloadPin 11
@@ -32,8 +31,8 @@ TO DO
 #define GreenLED 6
 
 //analog input definition
-#define LDR_Front A1
-#define LDR_Back A2
+#define LDR_Front A3
+#define LDR_Back A4
 
 // debounce and wait times
 #define ButWaitTime 500     //wait time between buttonpresses
@@ -51,6 +50,7 @@ int front = 0; //store average from measurement_front array to compare
 int back = 0; //store average from measurement_back array to compare
 
 bool PreviousTriggerState;
+bool TriggerPinState;
 
 #define CLK 2//pins definitions for TM1637 and can be changed to other ports
 #define DIO 3
@@ -67,6 +67,9 @@ bool teamSelectFlag = false;
 
 void setup()
 {
+  Serial.begin(115200);
+  Serial.println("hoi");
+  
   //initialize display
   dis.set(2); 
   dis.init();
@@ -76,15 +79,15 @@ void setup()
   pinMode(SelectButton, INPUT_PULLUP);
   pinMode(ScrollButton, INPUT_PULLUP);
   
-  pinMode(HitButton, INPUT_PULLUP);
   pinMode(ResetButton, INPUT_PULLUP);
   pinMode(ReloadPin, INPUT_PULLUP);
+  pinMode(TriggerPin, INPUT_PULLUP);
   
   pinMode(LDR_Front, INPUT);
   pinMode(LDR_Back, INPUT);
   
   pinMode(BuzzerPin, OUTPUT);
- 
+  pinMode(LightPin, OUTPUT);
   pinMode(GreenLED, OUTPUT);
   pinMode(RedLED, OUTPUT);
   
@@ -92,6 +95,7 @@ void setup()
   digitalWrite(GreenLED, HIGH);
   
   AmmoCount = Ammo;
+  Serial.println("setup done");
 
 for (int i = 0; i<=2; i++){ 																//take 3 readings from LDR and store in array
 																										// check if for loop can be used in setup
@@ -114,9 +118,9 @@ for (int i = 0; i<=2; i++){ 																//take 3 readings from LDR and store
 	delay(100);
 }
 
-front = (measurement_front[0] + measurement_front[1] + measurement_front[2]) / 3;
+front = ((measurement_front[0] + measurement_front[1] + measurement_front[2]) / 3) + 200;
 
-back = (measurement_back[0] + measurement_back[1] + measurement_back[2]) / 3;
+back = ((measurement_back[0] + measurement_back[1] + measurement_back[2]) / 3) + 200;
 
 Serial.print("measured average front = ");
 Serial.println(front);
@@ -124,7 +128,7 @@ Serial.println(front);
 Serial.print("measured average back = ");
 Serial.println(back);
 
-Serial.begin(9600);
+
 }
 
 void loop()
@@ -217,7 +221,7 @@ void GameStart()
   void HitDetect()
   {
 
-    if ((analogRead(LDR_Front) < Front || analogRead(LDR_Back) < Back) && millis() - CooldownTime >= HitTime ) //check if LDR measurement gets higher or lower
+    if ((analogRead(LDR_Front) > front || analogRead(LDR_Back) > back) && millis() - CooldownTime >= HitTime ) //check if LDR measurement gets higher or lower
     {
 	  Lives--;
       CooldownTime = millis();
@@ -262,9 +266,6 @@ void GameStart()
 
   void Trigger()
   {
-
-    bool TriggerPinState;
-
     TriggerPinState = digitalRead(TriggerPin);
 
         if (TriggerPinState == LOW && PreviousTriggerState != TriggerPinState && AmmoCount > 0 && millis() - LightTime >= (LightOnTime + SemiMode))
