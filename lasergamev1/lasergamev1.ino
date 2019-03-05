@@ -67,8 +67,9 @@ bool teamSelectFlag = false;
 
 void setup()
 {
+
   Serial.begin(115200);
-  Serial.println("hoi");
+  Serial.println("Serial start...");
   
   //initialize display
   dis.set(2); 
@@ -97,38 +98,6 @@ void setup()
   AmmoCount = Ammo;
   Serial.println("setup done");
 
-for (int i = 0; i<=2; i++){ 																//take 3 readings from LDR and store in array
-																										// check if for loop can be used in setup
-	measurement_front[i] = analogRead(LDR_Front);
-	
-	Serial.print("measurement front no ");
-	Serial.print(i);
-	Serial.print(" = ");
-	Serial.println(measurement_front[i]);
-
-	delay(100);
-	
-	measurement_back[i] = analogRead(LDR_Back);
-	
-	Serial.print("measurement back no ");
-	Serial.print(i);
-	Serial.print(" = ");
-	Serial.println(measurement_back[i]);
-	
-	delay(100);
-}
-
-front = ((measurement_front[0] + measurement_front[1] + measurement_front[2]) / 3) + 200;
-
-back = ((measurement_back[0] + measurement_back[1] + measurement_back[2]) / 3) + 200;
-
-Serial.print("measured average front = ");
-Serial.println(front);
-
-Serial.print("measured average back = ");
-Serial.println(back);
-
-
 }
 
 void loop()
@@ -150,6 +119,7 @@ void loop()
 
     if (digitalRead(ReloadPin) == LOW)
     {
+      
       AmmoCount = 20;
     }
   
@@ -188,13 +158,41 @@ void GameStart()
 	    if (digitalRead(SelectButton) == LOW)
           {
         teamSelectFlag = true;
-        Serial.println("Teamselectflag checked, let's continue ");
+        Serial.println("Teamselectflag checked, let's check lightstrength ");
+      
+      for (int i = 0; i<=2; i++)
+      { 																//take 3 readings from LDR and store in array
+	    measurement_front[i] = analogRead(LDR_Front);
+	
+	Serial.print("measurement front no ");
+	Serial.print(i);
+	Serial.print(" = ");
+	Serial.println(measurement_front[i]);
+
+	delay(100);
+	
+	measurement_back[i] = analogRead(LDR_Back);
+	
+	Serial.print("measurement back no ");
+	Serial.print(i);
+	Serial.print(" = ");
+	Serial.println(measurement_back[i]);
       }
+	delay(100);
+
+  front = ((measurement_front[0] + measurement_front[1] + measurement_front[2]) / 3) + 200;
+
+  back = ((measurement_back[0] + measurement_back[1] + measurement_back[2]) / 3) + 200;
+
+  Serial.print("measured average front = ");
+  Serial.println(front);
+
+  Serial.print("measured average back = ");
+  Serial.println(back);    
+      } 
   }
-  
 
-
-  while (StartFlag == true)
+    while (StartFlag == true)
   {
      if (digitalRead(ScrollButton) == LOW && millis() - CooldownTime >= ButWaitTime)
     {
