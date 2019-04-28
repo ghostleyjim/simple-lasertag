@@ -180,9 +180,9 @@ void GameStart()
       }
 	delay(100);
 
-  front = ((measurement_front[0] + measurement_front[1] + measurement_front[2]) / 3) + 200;
+  front = ((measurement_front[0] + measurement_front[1] + measurement_front[2]) / 3) - 200;
 
-  back = ((measurement_back[0] + measurement_back[1] + measurement_back[2]) / 3) + 200;
+  back = ((measurement_back[0] + measurement_back[1] + measurement_back[2]) / 3) - 200;
 
   Serial.print("measured average front = ");
   Serial.println(front);
@@ -218,12 +218,12 @@ void GameStart()
 
   void HitDetect()
   {
-
-    if ((analogRead(LDR_Front) > front || analogRead(LDR_Back) > back) && millis() - CooldownTime >= HitTime ) //check if LDR measurement gets higher or lower
+Serial.println(analogRead(LDR_Back));
+    if ((analogRead(LDR_Front) < front ||  analogRead(LDR_Back) < back) && millis() - CooldownTime >= HitTime ) //check if LDR measurement gets higher or lower
     {
 	  Lives--;
       CooldownTime = millis();
-      tone(BuzzerPin, 800, HitTime);
+      //tone(BuzzerPin, 800, HitTime);
     }
   }
 
@@ -253,12 +253,12 @@ void GameStart()
     if (DisplayState == true)
     {
       dis.init();
-      tone(BuzzerPin, 400, 500);
+      //tone(BuzzerPin, 400, 500);
     }
     else
     {
       dis.display(DisplayCode);
-      tone(BuzzerPin, 800, 500);
+      //tone(BuzzerPin, 800, 500);
     }
   }
 
