@@ -59,7 +59,9 @@ TM1637 dis(CLK,DIO);
 int8_t DisplayCode[] = {0x00, 0x00, 0x00, 0x00};
 
 int Lives = 0; //global variable for startlives
+int Old_Lives = 0;
 int AmmoCount;
+int Old_AmmoCount
 int Ammo = 20;         //ammount of ammo change variable for changing ammo per clip
 bool StartFlag = true; // flag to run a setup in the beginning out of the void setup() function
 bool DisplayState = true;
@@ -109,10 +111,13 @@ void loop()
   
   
 
-  if (Lives > 0 && StartFlag == false)
+  if (Lives > 0 && StartFlag == false && (Lives != Old_Lives || AmmoCount != Old_AmmoCount) )
   {
     DisplayUpdate();
   dis.display(DisplayCode);
+
+  Old_Lives = Lives;
+  Old_Ammocount = AmmoCount;
   
     Trigger();
     HitDetect();
