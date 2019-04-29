@@ -11,6 +11,14 @@ TO DO
 #include <Arduino.h>
 #include <avr/power.h>
 
+/*************************************************************************************************************************************
+*******************************************************user variables*****************************************************************
+*************************************************************************************************************************************/
+#define HitTime 1500        //cooldown time before you can get hit again and buzzersound time
+int LightOnTime = 1500; // time light is on (1000 ms is 1 sec)
+int SemiMode = 500;     // time between being able to fire again.
+int Ammo = 20;         //ammount of ammo change variable for changing ammo per clip
+
 #define CLK 2
 #define DIO 3
 
@@ -36,12 +44,9 @@ TO DO
 
 // debounce and wait times
 #define ButWaitTime 500     //wait time between buttonpresses
-#define HitTime 1500        //cooldown time before you can get hit again and buzzersound time
+
 unsigned long CooldownTime; // variable to store the millis() time
 unsigned long LightTime;    // store millis() when LED is switched on
-
-int LightOnTime = 1500; // time light is on (1000 ms is 1 sec)
-int SemiMode = 500;     // time between being able to fire again.
 
 int measurement_front[] = {0, 0, 0};
 int measurement_back[] = {0, 0, 0};
@@ -61,8 +66,7 @@ int8_t DisplayCode[] = {0x00, 0x00, 0x00, 0x00};
 int Lives = 0; //global variable for startlives
 int Old_Lives = 0;
 int AmmoCount;
-int Old_AmmoCount
-int Ammo = 20;         //ammount of ammo change variable for changing ammo per clip
+int Old_AmmoCount;
 bool StartFlag = true; // flag to run a setup in the beginning out of the void setup() function
 bool DisplayState = true;
 bool teamSelectFlag = false;
@@ -109,23 +113,25 @@ void loop()
     GameStart();
   }
   
-  
+  if (Lives > 0 && StartFlag == false) {
+  Trigger();
+  HitDetect();
+  }
 
-  if (Lives > 0 && StartFlag == false && (Lives != Old_Lives || AmmoCount != Old_AmmoCount) )
+  if (Lives != Old_Lives || AmmoCount != Old_AmmoCount) 
   {
     DisplayUpdate();
   dis.display(DisplayCode);
 
   Old_Lives = Lives;
-  Old_Ammocount = AmmoCount;
+  Old_AmmoCount = AmmoCount;
   
-    Trigger();
-    HitDetect();
+    
 
     if (digitalRead(ReloadPin) == LOW)
     {
       
-      AmmoCount = 20;
+      AmmoCount = Ammo;
     }
   
   }
@@ -215,6 +221,8 @@ void GameStart()
       }
     else if (digitalRead(SelectButton) == LOW && Lives > 0 && millis() - CooldownTime >= ButWaitTime)
     {
+      DisplayUpdate();
+      dis.display(DisplayCode);
       StartFlag = false;
     }
   }
@@ -236,9 +244,13 @@ Serial.println(analogRead(LDR_Back));
 
   void GameEnd()
   {
+    digitalWrite(LightPin,LOW);
     if (digitalRead(ResetButton) == LOW)
     {
       StartFlag = true;
+      AmmoCount=Ammo;
+      Old_Lives = Lives;
+      Old_AmmoCount = AmmoCount;
       loop();
     }
 
